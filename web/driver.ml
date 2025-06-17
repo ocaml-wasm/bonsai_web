@@ -228,8 +228,8 @@ let recompute
 
 let result (T { bonsai_driver; _ }) = Bonsai_driver.result bonsai_driver
 
-let schedule_event (T { bonsai_driver; _ }) effect =
-  Bonsai_driver.schedule_event bonsai_driver effect
+let schedule_event (T { bonsai_driver; _ }) effct =
+  Bonsai_driver.schedule_event bonsai_driver effct
 ;;
 
 let destroy (T { on_stop; _ }) = on_stop ()

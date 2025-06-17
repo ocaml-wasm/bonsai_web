@@ -40,4 +40,4 @@ val clear_persistence : 'a t -> unit
 (** By asking for the vars effect, you get a function that can be easily threaded through
     your components and triggered inside an action-application or inside of an event
     listener. *)
-val effect : 'a t -> 'a -> unit Effect.t
+val effect_ : 'a t -> 'a -> unit Effect.t

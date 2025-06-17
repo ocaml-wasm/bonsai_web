@@ -589,13 +589,13 @@ let rpc_name ~rpc_kind =
 
 let time_rpc_effect
   ~(rpc_kind : Bonsai_introspection_protocol.Rpc_kind.t Bonsai.t)
-  (effect : ('query -> 'response Effect.t) Bonsai.t)
+  (effct : ('query -> 'response Effect.t) Bonsai.t)
   =
-  let%arr.Bonsai effect and rpc_kind in
+  let%arr.Bonsai effct and rpc_kind in
   let name = rpc_name ~rpc_kind in
   fun query ->
     let%bind.Effect timer = Effect.of_sync_fun Javascript_profiling.Timer.start () in
-    let%map.Effect response = effect query in
+    let%map.Effect response = effct query in
     let () =
       let measurement = Javascript_profiling.Timer.stop timer in
       Javascript_profiling.measure ~track:"RPC Effect" ~color:Tertiary name measurement
@@ -714,7 +714,7 @@ let generic_poll_or_error
       Bonsai.Effect_throttling.Poll_result.Aborted
     | Finished x -> Finished (Or_error.map x ~f:get_response)
   in
-  let effect =
+  let effct =
     let path = Bonsai.path_id graph in
     let get_current_time = Bonsai.Clock.get_current_time graph in
     let%arr dispatcher
@@ -758,7 +758,7 @@ let generic_poll_or_error
       | Bonsai.Effect_throttling.Poll_result.Finished response ->
         on_response_received query response
   in
-  let effect = time_rpc_effect ~rpc_kind effect in
+  let effct = time_rpc_effect ~rpc_kind effct in
   (* Below are four constructs that schedule the effect to run:
 
      * [on_activate]
@@ -776,16 +776,16 @@ let generic_poll_or_error
       ~equal:equal_query
       query
       ~callback:
-        (let%arr effect in
+        (let%arr effct in
          fun prev query ->
            match prev with
-           | Some _ -> effect query
+           | Some _ -> effct query
            | None -> Effect.Ignore)
       graph
   in
   let send_rpc_effect =
-    let%arr effect and query in
-    effect query
+    let%arr effct and query in
+    effct query
   in
   let () =
     Bonsai.Edge.on_change'
@@ -1290,7 +1290,7 @@ module Our_rpc = struct
     let open Bonsai.Let_syntax in
     let get_current_time = Bonsai.Clock.get_current_time graph in
     let path = Bonsai.path_id graph in
-    let effect =
+    let effct =
       let%arr dispatcher and get_current_time and path and rpc_kind in
       fun query ->
         match%bind.Effect For_introspection.should_record_effect with
@@ -1309,7 +1309,7 @@ module Our_rpc = struct
             ~query
             ~here
     in
-    time_rpc_effect ~rpc_kind effect
+    time_rpc_effect ~rpc_kind effct
   ;;
 
   let dispatcher

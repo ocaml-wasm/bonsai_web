@@ -6,7 +6,7 @@ type 'a t =
   { var : 'a Bonsai.Expert.Var.t
   ; setter : 'a -> unit
   ; clear : unit -> unit
-  ; effect : 'a -> unit Effect.t
+  ; effct : 'a -> unit Effect.t
   }
 
 let getter_setter kind =
@@ -47,22 +47,22 @@ let create (type a) (module M : Sexpable with type t = a) kind ~unique_id ~defau
   let var = Bonsai.Expert.Var.create value in
   let setter t = t |> M.sexp_of_t |> Sexp.to_string_mach |> setter unique_id in
   let clear () = deleter unique_id in
-  let effect =
+  let effct =
     Effect.of_sync_fun (fun a ->
       setter a;
       Bonsai.Expert.Var.set var a)
   in
-  { var; setter; clear; effect }
+  { var; setter; clear; effct }
 ;;
 
-let set ?(here = Stdlib.Lexing.dummy_pos) { var; setter; clear = _; effect = _ } a =
+let set ?(here = Stdlib.Lexing.dummy_pos) { var; setter; clear = _; effct = _ } a =
   setter a;
   Bonsai.Expert.Var.set ~here var a
 ;;
 
-let value { var; setter = _; clear = _; effect = _ } = Bonsai.Expert.Var.value var
+let value { var; setter = _; clear = _; effct = _ } = Bonsai.Expert.Var.value var
 
-let update { var; setter; clear = _; effect = _ } ~f =
+let update { var; setter; clear = _; effct = _ } ~f =
   Bonsai.Expert.Var.update var ~f:(fun old ->
     let new_ = f old in
     setter new_;
@@ -70,5 +70,5 @@ let update { var; setter; clear = _; effect = _ } ~f =
 ;;
 
 let get { var; _ } = Bonsai.Expert.Var.get var
-let clear_persistence { var = _; setter = _; clear; effect = _ } = clear ()
-let effect { effect; _ } = effect
+let clear_persistence { var = _; setter = _; clear; effct = _ } = clear ()
+let effect_ { effct; _ } = effct
