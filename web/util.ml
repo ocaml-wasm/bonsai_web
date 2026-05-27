@@ -23,6 +23,13 @@ let am_within_disabled_fieldset (event : #Dom_html.event Js.t) =
     in
     Js.to_array event##composedPath
     |> Array.exists ~f:(fun element ->
+      let (element
+            : < tagName : Js.js_string Js.t Js.optdef Js.readonly_prop
+              ; disabled : bool Js.t Js.optdef Js.readonly_prop >
+                Js.t)
+        =
+        Js.Unsafe.coerce element
+      in
       let tag_name = Js.Optdef.to_option element##.tagName in
       let disabled = Js.Optdef.to_option element##.disabled in
       match Option.both tag_name disabled with
